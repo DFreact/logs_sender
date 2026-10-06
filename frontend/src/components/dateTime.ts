@@ -1,0 +1,2 @@
+export function localDate(value: Date) { return `${String(value.getDate()).padStart(2, '0')}.${String(value.getMonth() + 1).padStart(2, '0')}.${value.getFullYear()} ${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}`; }
+export function parseDate(value: string) { if (!/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/.test(value)) return null; const [d, m, y, h, n] = value.split(/[. :]/).map(Number); const date = new Date(y, m - 1, d, h, n); return localDate(date) === value ? date : null; }

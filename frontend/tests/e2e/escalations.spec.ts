@@ -1,0 +1,83 @@
+import { expect, test } from '@playwright/test';
+import { authenticate } from './auth';
+test.skip(!process.env.E2E_ESCALATION_FIXTURE, 'Requires the disposable escalation fixture');
+
+test('operator acknowledges escalation, stops future steps and resolves event', async ({ page, baseURL }, info) => {
+  await authenticate(page, baseURL!, 'operator');
+  const events = await (await page.request.get('/api/v1/events?q=' + encodeURIComponent('escalation-check для подтверждения'))).json();
+  expect(events.items).toHaveLength(1);
+  expect(events.next_cursor).toBeNull();
+  const id = events.items[0].id;
+  await page.goto('/#events/' + id);
+  await expect(page.getByRole('heading', { name: 'История эскалации', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Подтвердить', exact: true }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('Уже начатая отправка может завершиться');
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Подтвердить', exact: true }).click();
+  await expect(page.locator('.event-detail dd').filter({ hasText: /^Подтверждено$/ })).toBeVisible();
+  await expect(page.getByText('Остановлено: Подтверждено', { exact: true })).toBeVisible();
+  await expect(page.getByText('Время подтверждения', { exact: true })).toBeVisible();
+  const runs = await (await page.request.get(`/api/v1/events/${id}/escalations`)).json();
+  expect(runs.items[0].steps.slice(1).map((s: { state: string }) => s.state)).toEqual(['CANCELLED', 'CANCELLED']);
+  await expect(page.locator('main')).not.toContainText(/ACKNOWLEDGED|WAITING|STOPPED|Traceback/);
+  await page.screenshot({ path: info.outputPath('escalation-desktop.png'), fullPage: true });
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('escalation-mobile.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Отметить как решённое', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Отметить как решённое', exact: true }).click();
+  await expect(page.locator('.event-detail dd').filter({ hasText: /^Решено$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Подтвердить', exact: true })).toHaveCount(0);
+});
+
+test('operator suppresses an event and viewer cannot mutate it', async ({ page, baseURL }) => {
+  await authenticate(page, baseURL!, 'operator');
+  const events = await (await page.request.get('/api/v1/events?q=' + encodeURIComponent('escalation-check для подавления'))).json();
+  const id = events.items[0].id;
+  await page.goto('/#events/' + id);
+  await page.getByRole('button', { name: 'Подавить', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: 'Подавить', exact: true }).click();
+  await expect(page.locator('.event-detail dd').filter({ hasText: /^Подавлено$/ })).toBeVisible();
+  await authenticate(page, baseURL!, 'viewer');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Действия с событием' })).toBeVisible();
+  for (const name of ['Подтвердить', 'Отметить как решённое', 'Подавить']) await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+  await page.goto('/#escalations');
+  await expect(page.getByRole('alert')).toContainText('Недостаточно прав');
+  expect((await page.request.get('/api/v1/escalation-policies')).status()).toBe(403);
+});
+
+test('administrator creates Russian escalation policy, versions and routing reference', async ({ page, baseURL }, info) => {
+  await authenticate(page, baseURL!);
+  const name = `Дежурство ${Date.now()}`;
+  await page.goto('/#escalations');
+  await page.getByRole('button', { name: 'Создать политику', exact: true }).click();
+  await page.getByLabel('Название', { exact: true }).fill(name);
+  await page.getByLabel('Канал уведомлений', { exact: true }).nth(0).selectOption({ label: 'Локальная проверка эскалации' });
+  await page.getByRole('button', { name: 'Добавить шаг', exact: true }).click();
+  await page.getByLabel('Канал уведомлений', { exact: true }).nth(1).selectOption({ label: 'Локальная проверка эскалации' });
+  await page.getByLabel('С начала, минут', { exact: true }).nth(1).fill('10');
+  await page.getByRole('button', { name: 'Добавить шаг', exact: true }).click();
+  await page.getByLabel('Канал уведомлений', { exact: true }).nth(2).selectOption({ label: 'Локальная проверка эскалации' });
+  await page.getByLabel('С начала, минут', { exact: true }).nth(2).fill('30');
+  await expect(page.getByText('Все сроки отсчитываются от начала эскалации', { exact: false })).toBeVisible();
+  await page.setViewportSize({ width: 375, height: 812 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('policy-mobile.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Политика эскалации сохранена');
+  await page.getByRole('button', { name: `Изменить политику «${name}»`, exact: true }).click();
+  await page.getByLabel('Описание', { exact: true }).fill('Обновлённая инструкция');
+  await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Политика эскалации сохранена');
+  await page.getByRole('button', { name: `История политики «${name}»`, exact: true }).click();
+  await expect(page.getByText('Версия 2 · Администратор', { exact: false })).toBeVisible();
+  await page.goto('/#routing');
+  await page.getByRole('button', { name: 'Создать правило', exact: true }).click();
+  await page.getByLabel('Название', { exact: true }).fill(name);
+  await page.getByLabel('Действие', { exact: true }).selectOption('ESCALATE');
+  await page.getByLabel('Политика эскалации', { exact: true }).selectOption({ label: name });
+  // The existing visual builder starts with a required sender condition.
+  await page.getByLabel('Значение', { exact: true }).fill('browser-escalation-only');
+  await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('Настройки сохранены');
+});

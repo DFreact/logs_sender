@@ -1,0 +1,255 @@
+name: eventhub-dev
+
+x-logging: &logging
+  driver: local
+  options:
+    max-size: "${HUB_LOG_MAX_SIZE:-10m}"
+    max-file: "${HUB_LOG_MAX_FILES:-3}"
+
+x-backend: &backend
+  image: eventhub-backend:0.12.2
+  build:
+    context: ../..
+    dockerfile: infra/images/backend.offline.Dockerfile
+    network: none
+  environment: &backend-environment
+    HUB_INGESTION_THREADS: ${HUB_INGESTION_THREADS:-2}
+    HUB_DELIVERY_THREADS: ${HUB_DELIVERY_THREADS:-2}
+    HUB_DB_POOL_SIZE: ${HUB_DB_POOL_SIZE:-5}
+    HUB_DB_MAX_OVERFLOW: ${HUB_DB_MAX_OVERFLOW:-5}
+    HUB_WORK_BATCH_SIZE: ${HUB_WORK_BATCH_SIZE:-100}
+    HUB_BACKGROUND_POLL_SECONDS: ${HUB_BACKGROUND_POLL_SECONDS:-2}
+    HUB_INGEST_PER_MINUTE: ${HUB_INGEST_PER_MINUTE:-120}
+    HUB_DB_HOST: postgres
+    HUB_DB_NAME: eventhub
+    HUB_DB_USER: eventhub_app
+    HUB_DB_PASSWORD_FILE: /run/secrets/db_password
+    HUB_REDIS_HOST: redis
+    HUB_REDIS_PASSWORD_FILE: /run/secrets/redis_password
+    HUB_STORAGE_ROOT: /var/lib/eventhub/blobs
+    HUB_OUTBOUND_HOSTS: ${HUB_OUTBOUND_HOSTS:-[]}
+    HUB_OUTBOUND_NETWORKS: ${HUB_OUTBOUND_NETWORKS:-[]}
+    HUB_OUTBOUND_PORTS: ${HUB_OUTBOUND_PORTS:-[443,465,587]}
+    HUB_DELIVERY_RETRY_DELAYS: ${HUB_DELIVERY_RETRY_DELAYS:-[30,120,600,1800]}
+    HUB_DELIVERY_JITTER_PERCENT: ${HUB_DELIVERY_JITTER_PERCENT:-10}
+    HUB_SMTP_PUBLIC_HOST: ${HUB_SMTP_PUBLIC_HOST:-127.0.0.1}
+    HUB_SMTP_PUBLIC_PORT: ${HUB_SMTP_PORT:-2525}
+    HUB_SMTP_ALLOW_PLAINTEXT: ${HUB_SMTP_ALLOW_PLAINTEXT:-true}
+    HUB_SMTP_RECIPIENTS: ${HUB_SMTP_RECIPIENTS:-["events@localhost"]}
+    HUB_MAX_ALLOWED: ${HUB_MAX_ALLOWED:-false}
+    HUB_TELEGRAM_ALLOWED: ${HUB_TELEGRAM_ALLOWED:-false}
+    HUB_ALLOW_INSECURE_LOCAL_HTTP: "true"
+    HUB_ALLOWED_ORIGINS: '["http://127.0.0.1:${HUB_HTTP_PORT:-8080}","http://localhost:${HUB_HTTP_PORT:-8080}"]'
+    HUB_TRUSTED_PROXY_NETWORKS: '["${HUB_DOCKER_SUBNET:-172.31.51.0/24}"]' 
+  secrets: [db_password, redis_password]
+  volumes: [blobs:/var/lib/eventhub/blobs]
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  logging: *logging
+
+services:
+  postgres:
+    image: eventhub-postgres:16.15-security.1
+    user: postgres
+    environment:
+      POSTGRES_DB: eventhub
+      POSTGRES_USER: eventhub
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_admin_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    secrets: [db_admin_password]
+    volumes: [database:/var/lib/postgresql/data]
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql:uid=999,gid=999,mode=0700
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -h 127.0.0.1 -U eventhub -d eventhub"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging: *logging
+
+  db-init:
+    <<: *backend
+    command: [python, -m, app.persistence.bootstrap]
+    environment:
+      HUB_DB_HOST: postgres
+      HUB_DB_NAME: eventhub
+      HUB_DB_USER: eventhub
+      HUB_DB_PASSWORD_FILE: /run/secrets/db_admin_password
+    secrets: [db_admin_password, db_migration_password, db_password]
+    volumes: []
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  migrate:
+    <<: *backend
+    command: [python, -m, app.persistence.migrate]
+    environment:
+      HUB_DB_HOST: postgres
+      HUB_DB_NAME: eventhub
+      HUB_DB_USER: eventhub_migrator
+      HUB_DB_PASSWORD_FILE: /run/secrets/db_migration_password
+    secrets: [db_migration_password]
+    volumes: []
+    depends_on:
+      db-init: {condition: service_completed_successfully}
+
+  db-restore:
+    image: eventhub-postgres:16.15-security.1
+    profiles: [maintenance]
+    user: postgres
+    entrypoint: [sh, -c]
+    command:
+      - 'export PGPASSWORD="$$(cat /run/secrets/db_migration_password)"; exec pg_restore --exit-on-error --single-transaction --clean --if-exists --no-owner --no-privileges -h postgres -U eventhub_migrator -d eventhub'
+    secrets: [db_migration_password]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: *logging
+
+  storage-init:
+    <<: *backend
+    command: [python, -m, app.storage.initialize]
+    environment:
+      HUB_STORAGE_ROOT: /var/lib/eventhub/blobs
+    secrets: []
+
+  redis:
+    image: eventhub-redis:0.12.2
+    build:
+      context: ../..
+      dockerfile: infra/images/redis.Dockerfile
+    user: "999:999"
+    secrets: [redis_password]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, sh, -c, 'REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli --no-auth-warning ping | grep -q PONG']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging: *logging
+
+  worker: &background
+    <<: *backend
+    command: [python, -m, app.workers.runtime, worker]
+    restart: unless-stopped
+    stop_grace_period: 20s
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      storage-init: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -m, app.workers.check]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  delivery:
+    <<: *background
+    environment:
+      <<: *backend-environment
+      HUB_CHANNEL_SECRET_FILE: /run/secrets/channel_secret
+    secrets: [db_password, redis_password, channel_secret]
+    command: [python, -m, app.workers.runtime, delivery]
+    stop_grace_period: 40s
+
+  ingestion:
+    <<: *background
+    command: [python, -m, app.workers.runtime, ingestion]
+
+  smtp:
+    <<: *background
+    secrets: [db_password]
+    command: [python, -m, app.adapters.input.smtp]
+    environment:
+      <<: *backend-environment
+      HUB_SMTP_HOST: 0.0.0.0
+      HUB_INGEST_PER_MINUTE: ${HUB_INGEST_PER_MINUTE:-120}
+      HUB_SMTP_ALLOWED_NETWORKS: '["${HUB_DOCKER_SUBNET:-172.31.51.0/24}","127.0.0.0/8"]'
+    ports: ["127.0.0.1:${HUB_SMTP_PORT:-2525}:2525"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      storage-init: {condition: service_completed_successfully}
+
+  dispatcher:
+    <<: *background
+    command: [python, -m, app.workers.runtime, dispatcher]
+
+  scheduler:
+    <<: *background
+    secrets: [db_password]
+    command: [python, -m, app.workers.runtime, scheduler]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      storage-init: {condition: service_completed_successfully}
+
+  api:
+    <<: *backend
+    environment:
+      <<: *backend-environment
+      HUB_AUTH_SECRET_FILE: /run/secrets/auth_secret
+      HUB_CHANNEL_SECRET_FILE: /run/secrets/channel_secret
+    secrets: [db_password, redis_password, auth_secret, channel_secret]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      storage-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  web:
+    image: eventhub-web:0.12.2
+    build:
+      context: ../..
+      dockerfile: infra/images/web.offline.Dockerfile
+      network: none
+      args:
+        VITE_TIME_ZONE: ${HUB_TIME_ZONE:-Europe/Moscow}
+    ports: ["127.0.0.1:${HUB_HTTP_PORT:-8080}:8080"]
+    depends_on:
+      api: {condition: service_healthy}
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging: *logging
+
+volumes:
+  blobs:
+  database:
+
+secrets:
+  db_admin_password:
+    file: ../../.local/secrets/db_admin_password
+  db_migration_password:
+    file: ../../.local/secrets/db_migration_password
+  channel_secret:
+    file: ../../.local/secrets/channel_secret
+  redis_password:
+    file: ../../.local/secrets/redis_password
+  db_password:
+    file: ../../.local/secrets/db_password
+  auth_secret:
+    file: ../../.local/secrets/auth_secret
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${HUB_DOCKER_SUBNET:-172.31.51.0/24}

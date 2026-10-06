@@ -1,0 +1,39 @@
+import { useEffect, useId, useState, type FormEvent } from 'react';
+import { getPolicies, getVersions, savePolicy, type Policy, type Version } from '../../api/escalations';
+import { getChannels, type Channel } from '../../api/channels';
+import { safeFailure, type SafeError } from '../../api/client';
+import { useI18n } from '../../i18n';
+import { ErrorNotice, Field, Pagination } from '../../components/Forms';
+import { useAuth } from '../auth/AuthContext';
+function Fields({ value, change, channels, readOnly = false }: { value: Policy; change: (v: Policy) => void; channels: Channel[]; readOnly?: boolean }) {
+  const { t, formatNumber } = useI18n(); const id = useId();
+  return <fieldset disabled={readOnly}>
+    <Field id={`${id}-name`} labelKey="config.name"><input id={`${id}-name`} maxLength={120} value={value.name} onChange={(e) => change({ ...value, name: e.target.value })} /></Field>
+    <Field id={`${id}-description`} labelKey="config.description"><textarea id={`${id}-description`} maxLength={2000} value={value.description} onChange={(e) => change({ ...value, description: e.target.value })} /></Field>
+    <label className="checkbox-field"><input type="checkbox" checked={value.enabled} onChange={(e) => change({ ...value, enabled: e.target.checked })} />{t('escalation.enabled')}</label><p className="field-hint">{t('escalation.policyHint')}</p>
+    <h3>{t('escalation.steps')}</h3><p className="field-hint">{t('escalation.scheduleHint')}</p><p className="field-hint">{t('escalation.channelHint')}</p>
+    {value.steps.map((s, index) => <div className="condition-group" key={index}><h4>{t('escalation.step', { number: formatNumber(index + 1) })}</h4><Field id={`${id}-channel-${index}`} labelKey="channels.selection"><select id={`${id}-channel-${index}`} value={s.channel_id} onChange={(e) => change({ ...value, steps: value.steps.map((v, i) => i === index ? { ...v, channel_id: e.target.value } : v) })}><option value="">{t('channels.unbound')}</option>{s.channel_id && !channels.some((c) => c.id === s.channel_id && c.available) && <option value={s.channel_id}>{channels.find((c) => c.id === s.channel_id)?.name ?? t('channels.existingUnavailable')}</option>}{channels.filter((c) => c.available).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
+      <Field id={`${id}-delay-${index}`} labelKey="escalation.delay"><input id={`${id}-delay-${index}`} type="number" min={0} max={43200} step={1} readOnly={index === 0} value={s.delay_seconds / 60} onChange={(e) => change({ ...value, steps: value.steps.map((v, i) => i === index ? { ...v, delay_seconds: Number(e.target.value) * 60 } : v) })} /></Field>
+      {!readOnly && index > 0 && <button className="secondary" type="button" onClick={() => change({ ...value, steps: value.steps.filter((_, i) => i !== index) })}>{t('escalation.removeStep')}</button>}</div>)}
+    {!readOnly && value.steps.length < 10 && <button className="secondary" type="button" onClick={() => change({ ...value, steps: [...value.steps, { channel_id: '', delay_seconds: value.steps[value.steps.length - 1].delay_seconds + 600 }] })}>{t('escalation.addStep')}</button>}
+  </fieldset>;
+}
+function History({ policy, channels, close }: { policy: Policy; channels: Channel[]; close: () => void }) {
+  const { t, formatDate, formatNumber } = useI18n(); const [rows, setRows] = useState<Version[]>(), [total, setTotal] = useState(0), [offset, setOffset] = useState(0), [error, setError] = useState<SafeError>();
+  useEffect(() => { const c = new AbortController(); getVersions(policy.id, offset, c.signal).then((r) => { if (!c.signal.aborted) { setRows(r.items); setTotal(r.total); } }).catch((e) => { if (!c.signal.aborted) setError(safeFailure(e)); }); return () => c.abort(); }, [policy.id, offset]);
+  return <section className="card"><div className="section-heading"><h2>{t('escalation.versionsNamed', { name: policy.name })}</h2><button className="secondary" onClick={close}>{t('common.close')}</button></div><ErrorNotice error={error} />{!rows && !error && <p role="status">{t('common.loading')}</p>}{rows?.map((r) => <details key={r.version}><summary>{t('config.versionSummary', { version: formatNumber(r.version), author: r.author, date: formatDate(r.created_at) })}</summary><Fields value={r.snapshot} channels={channels} change={() => {}} readOnly /></details>)}<Pagination offset={offset} total={total} onChange={setOffset} /></section>;
+}
+export function PoliciesPage() {
+  const { t, formatNumber } = useI18n(); const auth = useAuth();
+  const [rows, setRows] = useState<Policy[]>(), [channels, setChannels] = useState<Channel[]>([]), [draft, setDraft] = useState<Policy>(), [history, setHistory] = useState<Policy>(), [error, setError] = useState<SafeError>(), [busy, setBusy] = useState(false), [saved, setSaved] = useState(false), [revision, setRevision] = useState(0);
+  useEffect(() => { const c = new AbortController(); Promise.all([getPolicies(c.signal), getChannels(c.signal)]).then(([p, ch]) => { if (!c.signal.aborted) { setRows(p.items); setChannels(ch.items); } }).catch((e) => { if (!c.signal.aborted) setError(safeFailure(e)); }); return () => c.abort(); }, [revision]);
+  async function submit(event: FormEvent) { event.preventDefault(); if (!draft || !auth.identity || busy) return;
+    if (!draft.name.trim() || draft.steps.some((s, i) => !s.channel_id || !Number.isInteger(s.delay_seconds / 60) || s.delay_seconds < 0 || s.delay_seconds > 2592000 || (i === 0 ? s.delay_seconds !== 0 : s.delay_seconds <= draft.steps[i - 1].delay_seconds))) { setError({ key: 'escalation.invalid' }); return; }
+    setBusy(true); setError(undefined); try { await savePolicy(draft, auth.identity.csrf_token); setDraft(undefined); setSaved(true); setRevision((v) => v + 1); } catch (e) { setError(safeFailure(e)); } finally { setBusy(false); }
+  }
+  return <><div className="section-heading"><h1>{t('escalation.title')}</h1><button onClick={() => { setDraft({ id: '', name: '', description: '', enabled: true, version: 1, steps: [{ channel_id: '', delay_seconds: 0 }] }); setHistory(undefined); setError(undefined); setSaved(false); }}>{t('escalation.create')}</button></div><ErrorNotice error={error} />{saved && <p role="status">{t('escalation.saved')}</p>}{!rows && !error && <p role="status">{t('common.loading')}</p>}
+    {draft && <form noValidate className="card" onSubmit={(e) => void submit(e)}><h2>{t(draft.id ? 'escalation.edit' : 'escalation.create')}</h2><Fields value={draft} change={setDraft} channels={channels} readOnly={busy} /><div className="form-actions"><button disabled={busy}>{t('common.save')}</button><button type="button" className="secondary" disabled={busy} onClick={() => setDraft(undefined)}>{t('common.close')}</button></div></form>}
+    {history && <History key={history.id} policy={history} channels={channels} close={() => setHistory(undefined)} />}
+    {rows && <section className="card table-scroll" tabIndex={0} role="region" aria-label={t('common.scrollTable')}>{rows.length === 0 ? <p>{t('escalation.empty')}</p> : <table className="escalation-policy-table"><thead><tr><th>{t('config.name')}</th><th>{t('users.status')}</th><th>{t('escalation.steps')}</th><th>{t('users.actions')}</th></tr></thead><tbody>{rows.map((r) => <tr key={r.id}><td>{r.name}</td><td>{t(r.enabled ? 'config.enabled' : 'config.disabled')}</td><td>{formatNumber(r.steps.length)}</td><td><button className="secondary" aria-label={t('escalation.editNamed', { name: r.name })} onClick={() => { setDraft(r); setHistory(undefined); setError(undefined); setSaved(false); }}>{t('common.edit')}</button><button className="secondary" aria-label={t('escalation.versionsNamed', { name: r.name })} onClick={() => { setHistory(r); setDraft(undefined); }}>{t('config.history')}</button></td></tr>)}</tbody></table>}</section>}
+  </>;
+}

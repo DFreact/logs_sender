@@ -1,0 +1,1256 @@
+{
+  "controls": 125,
+  "files": 19,
+  "fields": [
+    {
+      "file": "features/audit/AuditPage.tsx",
+      "line": 51,
+      "control": "select",
+      "type": "",
+      "id": "\"audit-action\"",
+      "label": "label/htmlFor",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/auth/LoginPage.tsx",
+      "line": 36,
+      "control": "input",
+      "type": "",
+      "id": "\"username\"",
+      "label": "\"auth.username\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/auth/LoginPage.tsx",
+      "line": 41,
+      "control": "input",
+      "type": "\"password\"",
+      "id": "\"password\"",
+      "label": "\"auth.password\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/auth/PasswordPage.tsx",
+      "line": 36,
+      "control": "input",
+      "type": "\"password\"",
+      "id": "\"current-password\"",
+      "label": "\"auth.currentPassword\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/auth/PasswordPage.tsx",
+      "line": 39,
+      "control": "input",
+      "type": "\"password\"",
+      "id": "\"new-password\"",
+      "label": "\"auth.newPassword\"",
+      "hint": "\"auth.passwordHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/auth/PasswordPage.tsx",
+      "line": 42,
+      "control": "input",
+      "type": "\"password\"",
+      "id": "\"repeat-password\"",
+      "label": "\"auth.repeatPassword\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 11,
+      "control": "input",
+      "type": "",
+      "id": "\"channel-chat\"",
+      "label": "\"channels.chat\"",
+      "hint": "{value.kind === 'MAX' ? 'channels.maxChatHint' : 'channels.chatHint'}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 12,
+      "control": "input",
+      "type": "\"url\"",
+      "id": "\"channel-url\"",
+      "label": "\"channels.url\"",
+      "hint": "\"channels.urlHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 18,
+      "control": "input",
+      "type": "",
+      "id": "\"channel-host\"",
+      "label": "\"channels.host\"",
+      "hint": "\"channels.hostHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 18,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "\"channel-port\"",
+      "label": "\"channels.port\"",
+      "hint": "\"channels.portHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 19,
+      "control": "select",
+      "type": "",
+      "id": "\"channel-tls\"",
+      "label": "\"channels.tls\"",
+      "hint": "\"channels.tlsHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 20,
+      "control": "input",
+      "type": "",
+      "id": "\"channel-username\"",
+      "label": "\"channels.username\"",
+      "hint": "\"channels.usernameHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 21,
+      "control": "input",
+      "type": "\"email\"",
+      "id": "\"channel-sender\"",
+      "label": "\"sources.sender\"",
+      "hint": "\"channels.senderHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 22,
+      "control": "textarea",
+      "type": "",
+      "id": "\"channel-recipients\"",
+      "label": "\"channels.recipients\"",
+      "hint": "\"channels.recipientsHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 41,
+      "control": "input",
+      "type": "",
+      "id": "\"channel-name\"",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 42,
+      "control": "select",
+      "type": "",
+      "id": "\"channel-kind\"",
+      "label": "\"channels.kind\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 45,
+      "control": "input",
+      "type": "\"password\"",
+      "id": "\"channel-secret\"",
+      "label": "{draft.kind === 'SMTP' ? 'channels.password' : 'channels.token'}",
+      "hint": "{draft.kind === 'SMTP' ? 'channels.smtpSecretHint' : draft.kind === 'WEBHOOK' ? 'channels.webhookSecretHint' : 'channels.botSecretHint'}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 46,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 50,
+      "control": "select",
+      "type": "",
+      "id": "\"channel-template\"",
+      "label": "\"templates.single\"",
+      "hint": "\"channels.templateHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 51,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 56,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 56,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/TestNotification.tsx",
+      "line": 12,
+      "control": "input",
+      "type": "",
+      "id": "\"test-notification-subject\"",
+      "label": "\"events.subject\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/TestNotification.tsx",
+      "line": 12,
+      "control": "textarea",
+      "type": "",
+      "id": "\"test-notification-body\"",
+      "label": "\"templates.eventBody\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 16,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 18,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 19,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${id}-window`}",
+      "label": "\"config.window\"",
+      "hint": "\"config.windowHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 20,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 30,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-group`}",
+      "label": "\"config.match\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 41,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-field`}",
+      "label": "\"config.field\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 42,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-selector`}",
+      "label": "{value.field === 'header' ? 'config.headerName' : 'config.metadataKey'}",
+      "hint": "\"config.selectorHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 43,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-op`}",
+      "label": "\"config.operator\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 45,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-value`}",
+      "label": "\"config.value\"",
+      "hint": "{value.operator === 'regex' ? 'config.regexHint' : value.field === 'adapter' ? 'config.adapterHint' : undefined}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 45,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-value`}",
+      "label": "\"config.value\"",
+      "hint": "{value.operator === 'regex' ? 'config.regexHint' : value.field === 'adapter' ? 'config.adapterHint' : undefined}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 45,
+      "control": "input",
+      "type": "{numeric ? 'number' : 'text'}",
+      "id": "{`${id}-value`}",
+      "label": "\"config.value\"",
+      "hint": "{value.operator === 'regex' ? 'config.regexHint' : value.field === 'adapter' ? 'config.adapterHint' : undefined}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/Editors.tsx",
+      "line": 47,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 23,
+      "control": "input",
+      "type": "\"text\"",
+      "id": "{id}",
+      "label": "\"routing.scheduledAt\"",
+      "hint": "\"routing.scheduleHint\"",
+      "placeholder": "{t('events.datePlaceholder')}"
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 30,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-kind`}",
+      "label": "\"routing.action\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 31,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-scope`}",
+      "label": "\"routing.scope\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 33,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-severity`}",
+      "label": "\"events.severityLabel\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 34,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 35,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-category`}",
+      "label": "\"config.category\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 36,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 37,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-type`}",
+      "label": "\"config.eventType\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 38,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-tags`}",
+      "label": "\"config.tags\"",
+      "hint": "\"config.tagsHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 40,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-digest`}",
+      "label": "\"digests.title\"",
+      "hint": "\"digests.ruleHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 41,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-policy`}",
+      "label": "\"escalation.selection\"",
+      "hint": "\"escalation.scheduleHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 43,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-channel`}",
+      "label": "\"channels.selection\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 44,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-mode`}",
+      "label": "\"routing.mode\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 45,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${id}-delay`}",
+      "label": "\"routing.delay\"",
+      "hint": "\"routing.delayHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 54,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-name`}",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 54,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${id}-priority`}",
+      "label": "\"config.priority\"",
+      "hint": "\"config.priorityHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 55,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-description`}",
+      "label": "\"config.description\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RoutingFields.tsx",
+      "line": 56,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 14,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-name`}",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 15,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-source`}",
+      "label": "\"events.source\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 16,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${id}-priority`}",
+      "label": "\"config.priority\"",
+      "hint": "\"config.priorityHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 17,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 19,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-severity`}",
+      "label": "\"events.severityLabel\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 20,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-category`}",
+      "label": "\"config.category\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 21,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-type`}",
+      "label": "\"config.eventType\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/RulesPage.tsx",
+      "line": 22,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-tags`}",
+      "label": "\"config.tags\"",
+      "hint": "\"config.tagsHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 21,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-${index}-name`}",
+      "label": "\"simulation.fieldName\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 22,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-${index}-type`}",
+      "label": "\"simulation.valueType\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 23,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-${index}-value`}",
+      "label": "\"config.value\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 23,
+      "control": "input",
+      "type": "{row.type === 'NUMBER' ? 'number' : 'text'}",
+      "id": "{`${id}-${index}-value`}",
+      "label": "\"config.value\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 56,
+      "control": "select",
+      "type": "",
+      "id": "\"test-source\"",
+      "label": "\"events.source\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 57,
+      "control": "select",
+      "type": "",
+      "id": "\"test-adapter\"",
+      "label": "\"sources.inputAdapter\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 58,
+      "control": "select",
+      "type": "",
+      "id": "\"test-severity\"",
+      "label": "\"events.severityLabel\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 59,
+      "control": "input",
+      "type": "",
+      "id": "\"test-sender\"",
+      "label": "\"sources.sender\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 60,
+      "control": "input",
+      "type": "",
+      "id": "\"test-envelope\"",
+      "label": "\"events.envelopeSender\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 61,
+      "control": "input",
+      "type": "",
+      "id": "\"test-recipients\"",
+      "label": "\"events.recipients\"",
+      "hint": "\"simulation.recipientsHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 62,
+      "control": "input",
+      "type": "",
+      "id": "\"test-subject\"",
+      "label": "\"events.subject\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SimulationPage.tsx",
+      "line": 63,
+      "control": "textarea",
+      "type": "",
+      "id": "\"test-body\"",
+      "label": "\"events.body\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SourcesPage.tsx",
+      "line": 32,
+      "control": "input",
+      "type": "",
+      "id": "\"source-name\"",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SourcesPage.tsx",
+      "line": 32,
+      "control": "input",
+      "type": "",
+      "id": "\"source-description\"",
+      "label": "\"config.description\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/configuration/SourcesPage.tsx",
+      "line": 32,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/connections/ConnectionsPage.tsx",
+      "line": 40,
+      "control": "input",
+      "type": "",
+      "id": "\"ingest-url\"",
+      "label": "\"connections.url\"",
+      "hint": "\"connections.urlHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/connections/ConnectionsPage.tsx",
+      "line": 46,
+      "control": "input",
+      "type": "",
+      "id": "\"ingest-smtp-host\"",
+      "label": "\"channels.host\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/connections/ConnectionsPage.tsx",
+      "line": 46,
+      "control": "input",
+      "type": "",
+      "id": "\"ingest-smtp-port\"",
+      "label": "\"channels.port\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/connections/ConnectionsPage.tsx",
+      "line": 47,
+      "control": "textarea",
+      "type": "",
+      "id": "\"ingest-smtp-recipients\"",
+      "label": "\"connections.recipient\"",
+      "hint": "\"connections.recipientHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/connections/ConnectionsPage.tsx",
+      "line": 55,
+      "control": "input",
+      "type": "",
+      "id": "\"ingest-key-name\"",
+      "label": "\"connections.keyName\"",
+      "hint": "\"connections.keyNameHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/connections/ConnectionsPage.tsx",
+      "line": 59,
+      "control": "input",
+      "type": "",
+      "id": "\"ingest-key-value\"",
+      "label": "\"connections.keyValue\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 14,
+      "control": "input",
+      "type": "\"text\"",
+      "id": "{id}",
+      "label": "\"digests.time\"",
+      "hint": "\"digests.timeHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 20,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-name`}",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 21,
+      "control": "textarea",
+      "type": "",
+      "id": "{`${id}-description`}",
+      "label": "\"config.description\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 22,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 23,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-channel`}",
+      "label": "\"channels.selection\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 24,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-template`}",
+      "label": "\"digests.template\"",
+      "hint": "\"digests.templateHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 25,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-zone`}",
+      "label": "\"digests.zone\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 27,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-period`}",
+      "label": "\"digests.period\"",
+      "hint": "\"digests.periodHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 28,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-selection`}",
+      "label": "\"digests.selection\"",
+      "hint": "\"digests.ruleHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 29,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 30,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 31,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${id}-wait`}",
+      "label": "\"digests.wait\"",
+      "hint": "\"digests.waitHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/digests/DigestFields.tsx",
+      "line": 32,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/escalations/PoliciesPage.tsx",
+      "line": 11,
+      "control": "input",
+      "type": "",
+      "id": "{`${id}-name`}",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/escalations/PoliciesPage.tsx",
+      "line": 12,
+      "control": "textarea",
+      "type": "",
+      "id": "{`${id}-description`}",
+      "label": "\"config.description\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/escalations/PoliciesPage.tsx",
+      "line": 13,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/escalations/PoliciesPage.tsx",
+      "line": 15,
+      "control": "select",
+      "type": "",
+      "id": "{`${id}-channel-${index}`}",
+      "label": "\"channels.selection\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/escalations/PoliciesPage.tsx",
+      "line": 16,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${id}-delay-${index}`}",
+      "label": "\"escalation.delay\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 41,
+      "control": "input",
+      "type": "",
+      "id": "\"event-search\"",
+      "label": "\"events.search\"",
+      "hint": "",
+      "placeholder": "{t('events.searchPlaceholder')}"
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 42,
+      "control": "select",
+      "type": "",
+      "id": "\"event-status\"",
+      "label": "\"events.statusLabel\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 43,
+      "control": "select",
+      "type": "",
+      "id": "\"event-severity\"",
+      "label": "\"events.severityLabel\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 44,
+      "control": "select",
+      "type": "",
+      "id": "\"event-adapter\"",
+      "label": "\"sources.inputAdapter\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 45,
+      "control": "select",
+      "type": "",
+      "id": "\"event-source\"",
+      "label": "\"events.source\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 46,
+      "control": "input",
+      "type": "\"text\"",
+      "id": "\"event-from\"",
+      "label": "\"events.from\"",
+      "hint": "",
+      "placeholder": "{t('events.datePlaceholder')}"
+    },
+    {
+      "file": "features/events/EventsPage.tsx",
+      "line": 47,
+      "control": "input",
+      "type": "\"text\"",
+      "id": "\"event-to\"",
+      "label": "\"events.to\"",
+      "hint": "",
+      "placeholder": "{t('events.datePlaceholder')}"
+    },
+    {
+      "file": "features/notifications/NotificationsPage.tsx",
+      "line": 16,
+      "control": "select",
+      "type": "",
+      "id": "\"notification-status\"",
+      "label": "label/htmlFor",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/settings/RetentionForm.tsx",
+      "line": 45,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/settings/RetentionForm.tsx",
+      "line": 48,
+      "control": "input",
+      "type": "\"number\"",
+      "id": "{`${prefix}-${key}`}",
+      "label": "{retentionFields[key]}",
+      "hint": "{retentionHints[key]}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/settings/SettingsPage.tsx",
+      "line": 31,
+      "control": "input",
+      "type": "\"radio\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/settings/SettingsPage.tsx",
+      "line": 32,
+      "control": "select",
+      "type": "",
+      "id": "\"appearance-mode\"",
+      "label": "\"appearance.mode\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/settings/SettingsPage.tsx",
+      "line": 35,
+      "control": "input",
+      "type": "",
+      "id": "\"appearance-example\"",
+      "label": "\"events.source\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/templates/TemplatesPage.tsx",
+      "line": 25,
+      "control": "input",
+      "type": "",
+      "id": "\"template-name\"",
+      "label": "\"config.name\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/templates/TemplatesPage.tsx",
+      "line": 26,
+      "control": "select",
+      "type": "",
+      "id": "\"template-kind\"",
+      "label": "\"channels.kind\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/templates/TemplatesPage.tsx",
+      "line": 27,
+      "control": "input",
+      "type": "",
+      "id": "\"template-subject\"",
+      "label": "\"templates.subject\"",
+      "hint": "\"templates.subjectHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/templates/TemplatesPage.tsx",
+      "line": 28,
+      "control": "textarea",
+      "type": "",
+      "id": "\"template-body\"",
+      "label": "\"templates.body\"",
+      "hint": "\"templates.variablesHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/templates/TemplatesPage.tsx",
+      "line": 30,
+      "control": "textarea",
+      "type": "",
+      "id": "\"template-html\"",
+      "label": "\"templates.html\"",
+      "hint": "\"templates.htmlHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/templates/TemplatesPage.tsx",
+      "line": 32,
+      "control": "textarea",
+      "type": "",
+      "id": "{`sample-${key}`}",
+      "label": "{label}",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/users/UsersPage.tsx",
+      "line": 53,
+      "control": "input",
+      "type": "",
+      "id": "\"edit-username\"",
+      "label": "\"auth.username\"",
+      "hint": "{!user ? 'auth.usernameHint' : undefined}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/users/UsersPage.tsx",
+      "line": 58,
+      "control": "input",
+      "type": "",
+      "id": "\"display-name\"",
+      "label": "\"users.displayName\"",
+      "hint": "",
+      "placeholder": ""
+    },
+    {
+      "file": "features/users/UsersPage.tsx",
+      "line": 61,
+      "control": "select",
+      "type": "",
+      "id": "\"user-role\"",
+      "label": "\"users.role\"",
+      "hint": "{hints[role]}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/users/UsersPage.tsx",
+      "line": 66,
+      "control": "input",
+      "type": "\"password\"",
+      "id": "\"user-password\"",
+      "label": "{user ? 'auth.newPassword' : 'auth.password'}",
+      "hint": "{user ? 'users.newPasswordHint' : 'auth.passwordHint'}",
+      "placeholder": ""
+    },
+    {
+      "file": "features/users/UsersPage.tsx",
+      "line": 69,
+      "control": "input",
+      "type": "\"checkbox\"",
+      "id": "",
+      "label": "enclosing label",
+      "hint": "",
+      "placeholder": ""
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "namespace_isolated": true,
+  "synthetic_destinations_only": true,
+  "baseline": {
+    "MAX": true,
+    "other_host": true,
+    "wrong_port": true,
+    "dns_tcp": true,
+    "dns_udp": true,
+    "worker": true,
+    "host": true
+  },
+  "protected": {
+    "MAX": true,
+    "other_host": false,
+    "wrong_port": false,
+    "dns_tcp": false,
+    "dns_udp": false,
+    "worker": false,
+    "host": false
+  },
+  "removed_policy_rejected": true,
+  "external_dns_disabled": true
+}
