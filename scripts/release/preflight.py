@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from admin import Parser, say
-from network_guard import local_engine
+from host import local_engine
 
 
 def command(*args):
@@ -50,7 +50,7 @@ def main():
         "cgroup_version": docker.get("CgroupVersion"),
         "security_options": docker.get("SecurityOptions", []),
         "compose": compose,
-        "nft_available": bool(shutil.which("nft")),
+        "iproute_available": bool(shutil.which("ip")),
         "free_bytes": shutil.disk_usage(args.output.resolve().parent).free,
         "checks": {},
     }
@@ -61,7 +61,7 @@ def main():
         "linux_engine": docker.get("OSType") == "linux",
         "compose_wait": "--wait-timeout" in up_help,
         "compose_no_pull": "--pull" in up_help and "--pull" in run_help,
-        "nft_available": report["nft_available"],
+        "iproute_available": report["iproute_available"],
     }
     smoke = {}
     common = [
@@ -128,6 +128,6 @@ with tempfile.TemporaryFile() as handle:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception:  # noqa: BLE001 - restore safely or show a sanitized CLI error
         say("preflightFailed")
         sys.exit(1)

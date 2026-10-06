@@ -44,8 +44,7 @@ def main(destination):
     for name in (
         "admin.py",
         "messages.ru.json",
-        "network_guard.py",
-        "network_policy.py",
+        "host.py",
     ):
         shutil.copyfile(ROOT / "scripts/release" / name, destination / name)
     shutil.copyfile(ROOT / "docs/astra-linux.md", destination / "instructions.md")

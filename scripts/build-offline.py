@@ -9,7 +9,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "release"))
-from admin import MESSAGES, Failure, Parser, digest, run, say, seal, write_json  # noqa: E402
+from admin import (
+    MESSAGES,
+    Failure,
+    Parser,
+    digest,
+    run,
+    say,
+    seal,
+    write_json,
+)
 
 
 def build(destination):
@@ -75,20 +84,20 @@ def build(destination):
         "upgrade.py",
         "storage.py",
         "messages.ru.json",
-        "network_policy.py",
+        "host.py",
+        "configuration.py",
+        "install.py",
+        "install.sh",
         "preflight.py",
-        "network_guard.py",
     ):
         shutil.copyfile(ROOT / "scripts/release" / name, destination / name)
-    for name in ("network-policy.py", "network-guard.py"):
-        shutil.copyfile(ROOT / "scripts" / name, destination / name)
     (destination / "operations.md").write_text(
         (ROOT / "docs/offline-operations.md").read_text()
-        + "\n\n" + (ROOT / "docs/local-upgrade.md").read_text()
     )
-    for document in ('database-privileges.md', 'security-dependencies-0.12.1.json', 'security-review.md', 'astra-linux.md', 'security-dependencies-final.json', 'security-dependencies-before-os-update.json', 'security-os-advisories.json', 'network-policy-verification.json'):
+    for document in ('database-privileges.md', 'security-dependencies-0.12.1.json', 'security-review.md', 'astra-linux.md', 'security-dependencies-final.json', 'security-dependencies-before-os-update.json', 'security-os-advisories.json'):
         shutil.copyfile(ROOT / "docs" / document, destination / document)
     shutil.copyfile(ROOT / ".env.example", destination / "settings.env.example")
+    (destination / "install.sh").chmod(0o755)
     run(
         [
             "docker",
@@ -104,7 +113,7 @@ def build(destination):
         {
             "format": 1,
             "kind": "release",
-            "release": "0.12.2-offline.1",
+            "release": "0.12.2-offline.2",
             "schema": "0012",
             "created_at": datetime.now(UTC).isoformat(),
             "images": images,

@@ -119,13 +119,12 @@ def verified(directory, kind):
                 "security-dependencies-final.json",
                 "security-dependencies-before-os-update.json",
                 "security-os-advisories.json",
-                "network-policy-verification.json",
                 "settings.env.example",
-                "network_policy.py",
+                "host.py",
+                "configuration.py",
                 "preflight.py",
-                "network_guard.py",
-                "network-policy.py",
-                "network-guard.py",
+                "install.py",
+                "install.sh",
             }
         )
         if set(names) != expected:
@@ -190,20 +189,6 @@ def prepare(args, manifest, channel=None, settings=None):
             ssl.create_default_context(cafile=str(ca))
         except (OSError, ValueError, ssl.SSLError):
             raise Failure("invalid") from None
-    security = None
-    if not args.isolated:
-        if not getattr(args, "network_policy", None):
-            raise Failure("networkRequired")
-        try:
-            from network_guard import check, load, local_engine
-
-            local_engine()
-            security = check(args.network_policy.resolve())
-            if security["project"] != args.project or security["subnet"] != args.subnet:
-                raise ValueError()
-            _, network_config, _ = load(args.network_policy.resolve())
-        except Exception:
-            raise Failure("networkGuardFailed") from None
     if not re.fullmatch(r"[a-z][a-z0-9-]{2,50}", args.project):
         raise Failure("invalid")
     if (
@@ -212,8 +197,12 @@ def prepare(args, manifest, channel=None, settings=None):
     ):
         raise Failure("invalid")
     try:
-        if ipaddress.ip_network(args.subnet, strict=True).version != 4:
-            raise ValueError()
+        from host import subnet
+        subnet(args.subnet)
+        for value in getattr(args, "dns", None) or []:
+            address = ipaddress.ip_address(value)
+            if address.is_loopback or address.is_unspecified or address.is_multicast:
+                raise ValueError()
     except ValueError:
         raise Failure("invalid") from None
     for resource in ("container", "volume", "network"):
@@ -253,32 +242,25 @@ def prepare(args, manifest, channel=None, settings=None):
         path.chmod(0o444)  # Private 0700 parent; mounted by non-root services.
     config = json.loads((HERE / "compose.json").read_text())
     config["networks"]["default"]["internal"] = args.isolated
-    if security:
-        for name, overrides in network_config["services"].items():
-            base = config["services"][name]
-            for key, value in overrides.items():
-                if key == "environment":
-                    base.setdefault(key, {}).update(value)
-                else:
-                    base[key] = value
-        config["networks"]["default"].update(network_config["networks"]["default"])
-    else:
+    config["networks"]["default"]["enable_ipv6"] = False
+    config["networks"]["default"]["ipam"] = {
+        "config": [{"subnet": "${HUB_DOCKER_SUBNET}"}]
+    }
+    for service in config["services"].values():
+        service["sysctls"] = {"net.ipv6.conf.all.disable_ipv6": "1"}
+        if "healthcheck" in service:
+            service["restart"] = "unless-stopped"
+        if getattr(args, "dns", None):
+            service["dns"] = args.dns
+    if args.isolated:
         net = ipaddress.ip_network(args.subnet, strict=True)
-        if not net.is_private or not 16 <= net.prefixlen <= 27:
-            raise Failure("invalid")
-        config["networks"]["default"].update({
-            "enable_ipv6": False,
-            "ipam": {"config": [{"subnet": str(net), "ip_range": str(list(net.subnets())[1])}]},
-        })
+        config["networks"]["default"]["ipam"]["config"][0]["ip_range"] = str(list(net.subnets())[1])
         for name, offset in (("web", 12), ("smtp", 13)):
             config["services"][name]["networks"] = {
                 "default": {"ipv4_address": str(net.network_address + offset)}
             }
-            # Internal bridges do not publish host ports. A local, loopback-only
-            # socket proxy can expose these fixed destinations without egress.
             config["services"][name].pop("ports", None)
         for service in config["services"].values():
-            service["sysctls"] = {"net.ipv6.conf.all.disable_ipv6": "1"}
             service["dns"] = ["127.0.0.1"]
             service["dns_search"] = ["."]
     if ca:
@@ -317,7 +299,7 @@ def prepare(args, manifest, channel=None, settings=None):
             "images": manifest["images"],
             "ready": False,
             "isolated": args.isolated,
-            "network_policy": str(args.network_policy.resolve()) if security else None,
+            "network_management": "isolated" if args.isolated else "external",
             "compose_sha256": digest(directory / "compose.json"),
             "ca_sha256": digest(directory / "trusted-ca.pem") if ca else None,
         },
@@ -335,17 +317,15 @@ def mark_ready(directory):
 def network_check(directory):
     state = json.loads((directory / "installation.json").read_text())
     if digest(directory / "compose.json") != state.get("compose_sha256"):
-        raise Failure("networkGuardFailed")
+        raise Failure("configurationChanged")
     if state.get("ca_sha256") and digest(directory / "trusted-ca.pem") != state["ca_sha256"]:
-        raise Failure("networkGuardFailed")
-    if not state.get("isolated"):
-        try:
-            from network_guard import check, local_engine
-
-            local_engine()
-            check(Path(state["network_policy"]))
-        except Exception:
-            raise Failure("networkGuardFailed") from None
+        raise Failure("configurationChanged")
+    if state.get("network_policy"):
+        # Older guarded installations must continue using their original kit.
+        # Do not silently disable an already installed firewall policy.
+        raise Failure("legacyInstallation")
+    from host import local_engine
+    local_engine()
 
 
 def up(directory, *services):
@@ -470,7 +450,10 @@ def validate_archive(path):
 
 def restore(args, manifest):
     saved = verified(args.backup, "backup")
-    if any(saved[key] != manifest[key] for key in ("release", "schema", "images")):
+    compatible_release = saved["release"] == manifest["release"] or (
+        saved["release"] == "0.12.2-offline.1" and manifest["release"] == "0.12.2-offline.2"
+    )
+    if not compatible_release or any(saved[key] != manifest[key] for key in ("schema", "images")):
         raise Failure("damaged")
     validate_archive(args.backup / "blobs.tar.gz")
     directory = prepare(
@@ -575,16 +558,16 @@ def main():
     parser.add_argument("--help", action="help", help=MESSAGES["description"])
     parser.add_argument(
         "command",
-        choices=("verify", "load", "install", "start", "stop", "backup", "restore"),
+        choices=("verify", "load", "install", "start", "stop", "backup", "restore", "configure"),
     )
     parser.add_argument("--directory", type=Path, metavar=MESSAGES["path"])
     parser.add_argument("--project", default="eventhub", metavar=MESSAGES["project"])
-    parser.add_argument("--http-port", type=int, default=8080, metavar=MESSAGES["port"])
-    parser.add_argument("--smtp-port", type=int, default=2525, metavar=MESSAGES["port"])
-    parser.add_argument("--subnet", default="172.31.54.0/24", metavar=MESSAGES["subnet"])
+    parser.add_argument("--http-port", type=int, metavar=MESSAGES["port"])
+    parser.add_argument("--smtp-port", type=int, metavar=MESSAGES["port"])
+    parser.add_argument("--subnet", metavar=MESSAGES["subnet"])
     parser.add_argument("--isolated", action="store_true")
     parser.add_argument("--ca-file", type=Path, metavar=MESSAGES["path"])
-    parser.add_argument("--network-policy", type=Path, metavar=MESSAGES["path"])
+    parser.add_argument("--dns", action="append", default=[])
     parser.add_argument("--backup", type=Path, metavar=MESSAGES["path"])
     parser.add_argument("--output", type=Path, metavar=MESSAGES["path"])
     args = parser.parse_args()
@@ -604,6 +587,15 @@ def main():
     ):
         raise Failure("invalid")
     images(manifest)
+    if args.command in ("install", "restore"):
+        args.http_port = args.http_port if args.http_port is not None else 8080
+        args.smtp_port = args.smtp_port if args.smtp_port is not None else 2525
+        try:
+            from host import choose_subnet, local_engine
+            local_engine()
+            args.subnet = choose_subnet(args.subnet)
+        except (ValueError, RuntimeError, OSError):
+            raise Failure("subnetUnavailable") from None
     if args.command == "install":
         directory = prepare(args, manifest)
         with lock(directory):
@@ -624,6 +616,9 @@ def main():
             elif args.command == "stop":
                 compose(args.directory, "stop", "--timeout", "60")
                 say("stopped")
+            elif args.command == "configure":
+                from configuration import configure
+                configure(args)
             elif args.command == "backup":
                 backup(args.directory, args.output.resolve())
 

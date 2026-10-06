@@ -14,12 +14,11 @@ import network_guard
 from network_policy import policy
 
 
-def test_policy_required_before_any_install_mutation(tmp_path):
-    args = SimpleNamespace(directory=tmp_path / "install", isolated=False)
-    with (
-        patch.object(admin, "run") as run,
-        pytest.raises(admin.Failure, match="networkRequired"),
-    ):
+def test_invalid_subnet_rejected_before_install_mutation(tmp_path):
+    args = SimpleNamespace(directory=tmp_path / "install", isolated=False,
+                           project="test-external", http_port=8080, smtp_port=2525,
+                           subnet="0.0.0.0/0")
+    with patch.object(admin, "run") as run, pytest.raises(admin.Failure, match="invalid"):
         admin.prepare(args, {})
     run.assert_not_called()
     assert not args.directory.exists()
@@ -47,7 +46,7 @@ def test_changed_compose_stops_before_docker(tmp_path):
     )
     with (
         patch.object(admin, "compose") as compose,
-        pytest.raises(admin.Failure, match="networkGuardFailed"),
+        pytest.raises(admin.Failure, match="configurationChanged"),
     ):
         admin.up(tmp_path)
     compose.assert_not_called()
@@ -68,7 +67,7 @@ def test_missing_live_policy_stops_before_docker(tmp_path):
         patch.object(network_guard, "local_engine"),
         patch.object(network_guard, "check", side_effect=ValueError()),
         patch.object(admin, "compose") as compose,
-        pytest.raises(admin.Failure, match="networkGuardFailed"),
+        pytest.raises(admin.Failure, match="legacyInstallation"),
     ):
         admin.up(tmp_path)
     compose.assert_not_called()
@@ -125,7 +124,7 @@ def test_changed_ca_prevents_start(tmp_path):
         'compose_sha256': admin.digest(tmp_path / 'compose.json'),
         'ca_sha256': 'trusted-hash', 'isolated': True,
     }))
-    with patch.object(admin, 'compose') as compose, pytest.raises(admin.Failure, match='networkGuardFailed'):
+    with patch.object(admin, 'compose') as compose, pytest.raises(admin.Failure, match='configurationChanged'):
         admin.up(tmp_path)
     compose.assert_not_called()
 
