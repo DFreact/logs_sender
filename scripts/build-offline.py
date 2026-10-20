@@ -113,8 +113,8 @@ def build(destination):
         {
             "format": 1,
             "kind": "release",
-            "release": "0.12.2-offline.2",
-            "schema": "0012",
+            "release": "0.12.3-offline.1",
+            "schema": "0013",
             "created_at": datetime.now(UTC).isoformat(),
             "images": images,
         },

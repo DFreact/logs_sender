@@ -46,12 +46,13 @@ def blocked(db, row, channel, settings):
     if (adapter and not adapter.enabled) or (
         (row.kind == "TELEGRAM" and not settings.telegram_allowed)
         or (row.kind == "MAX" and not settings.max_allowed)
+        or (row.kind == "VK" and not settings.vk_allowed)
     ):
         return "ADAPTER_DISABLED"
     if channel.configuration != row.configuration:
         return "CHANNEL_CHANGED"
     if not channel.secret_ciphertext and (
-        row.kind in ("TELEGRAM", "MAX") or row.configuration.get("username")
+        row.kind in ("TELEGRAM", "MAX", "VK") or row.configuration.get("username")
     ):
         return "SECRET_UNAVAILABLE"
     return None

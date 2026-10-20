@@ -1,5 +1,6 @@
 """Output contract used by the isolated delivery worker."""
 
+import hashlib
 import http.client
 import json
 import smtplib
@@ -7,6 +8,7 @@ import ssl
 from dataclasses import dataclass
 from email.message import EmailMessage
 from typing import Literal, Protocol
+from urllib.parse import urlencode
 
 from app.adapters.output import network
 from app.adapters.output.retry import retry_after
@@ -79,6 +81,10 @@ class Adapter:
             if not self.settings.max_allowed:
                 raise ApiFailure(422, ErrorCode.OUTBOUND_BLOCKED)
             return "platform-api2.max.ru", 443
+        if self.config["kind"] == "VK":
+            if not self.settings.vk_allowed:
+                raise ApiFailure(422, ErrorCode.OUTBOUND_BLOCKED)
+            return "api.vk.com", 443
         host, port, _ = network.endpoint(self.config["url"])
         return host, port
 
@@ -94,7 +100,16 @@ class Adapter:
             sock.close()
             raise
 
-    def http(self, path, payload, secret="", idempotency_key="", *, method="POST"):
+    def http(
+        self,
+        path,
+        payload,
+        secret="",
+        idempotency_key="",
+        *,
+        method="POST",
+        content_type="application/json",
+    ):
         host, port = self.destination()
         connection = http.client.HTTPSConnection(host, port, timeout=3)
         try:
@@ -104,7 +119,7 @@ class Adapter:
                 raise
             except Exception:
                 raise BeforeSend() from None
-            headers = {"Content-Type": "application/json", "Connection": "close"}
+            headers = {"Content-Type": content_type, "Connection": "close"}
             if idempotency_key:
                 headers["Idempotency-Key"] = idempotency_key
             if secret:
@@ -121,6 +136,15 @@ class Adapter:
             return response.status, raw, retry_after(response.getheader("Retry-After"))
         finally:
             connection.close()
+
+    def vk_http(self, method, parameters):
+        # Tokens never enter the URL or logs; endpoint and API version are fixed.
+        payload = urlencode({**parameters, "access_token": self.secret_provider(), "v": "5.199"})
+        return self.http(
+            "/method/" + method,
+            payload,
+            content_type="application/x-www-form-urlencoded",
+        )
 
     def smtp(self):
         client = PinnedSMTP(self.settings, self.config)
@@ -164,6 +188,19 @@ class Adapter:
                 if status != 200 or json.loads(raw).get("is_bot") is not True:
                     raise OSError()
                 return "BOT_VERIFIED"
+            if self.config["kind"] == "VK":
+                status, raw, _ = self.vk_http("groups.getTokenPermissions", {})
+                data = json.loads(raw)
+                permissions = data.get("response", {}).get("permissions", [])
+                if (
+                    status != 200
+                    or "error" in data
+                    or not any(
+                        p.get("name") == "messages" and p.get("setting") == 1 for p in permissions
+                    )
+                ):
+                    raise OSError()
+                return "COMMUNITY_VERIFIED"
             with self.tls_socket():
                 return "TLS_ONLY"
         except ApiFailure:
@@ -204,7 +241,38 @@ class Adapter:
                     )
                 finally:
                     client.close()
-            if self.config["kind"] == "TELEGRAM":
+            if self.config["kind"] == "VK":
+                if (
+                    not prepared.body
+                    or len(prepared.body.encode("utf-16-le")) // 2 > 9000
+                    or not prepared.idempotency_key
+                ):
+                    return DeliveryResult("PERMANENT", "TEMPLATE_INVALID")
+                # Stable across retries of the same notification; signed 32-bit API value.
+                random_id = (
+                    int.from_bytes(
+                        hashlib.sha256(prepared.idempotency_key.encode()).digest()[:4], "big"
+                    )
+                    & 0x7FFFFFFF
+                )
+                started = True
+                status, raw, retry = self.vk_http(
+                    "messages.send",
+                    {
+                        "group_id": self.config["group_id"],
+                        "peer_id": self.config["peer_id"],
+                        "message": prepared.body,
+                        "random_id": random_id or 1,
+                        "dont_parse_links": 1,
+                        "disable_mentions": 1,
+                    },
+                )
+                if status == 200:
+                    from app.adapters.output.vk import classify
+
+                    outcome, reason = classify(json.loads(raw))
+                    return DeliveryResult(outcome, reason, retry)
+            elif self.config["kind"] == "TELEGRAM":
                 if not prepared.body or len(prepared.body.encode("utf-16-le")) // 2 > 4096:
                     return DeliveryResult("PERMANENT", "TEMPLATE_INVALID")
                 path = "/bot" + self.secret_provider() + "/sendMessage"
@@ -230,9 +298,12 @@ class Adapter:
                 ):
                     return DeliveryResult("PERMANENT", "TEMPLATE_INVALID")
                 secret = self.secret_provider()
-            started = True
-            status, raw, retry = self.http(path, payload, secret, prepared.idempotency_key)
+            if self.config["kind"] != "VK":
+                started = True
+                status, raw, retry = self.http(path, payload, secret, prepared.idempotency_key)
             if 200 <= status < 300:
+                if self.config["kind"] == "VK":
+                    return DeliveryResult("UNKNOWN", "UNKNOWN_RESULT")
                 if self.config["kind"] == "TELEGRAM" and json.loads(raw).get("ok") is not True:
                     return DeliveryResult("UNKNOWN", "UNKNOWN_RESULT")
                 if self.config["kind"] == "MAX":
@@ -288,4 +359,4 @@ class Adapter:
             )
 
 
-ADAPTER_KINDS = ("SMTP", "TELEGRAM", "MAX", "WEBHOOK")
+ADAPTER_KINDS = ("SMTP", "TELEGRAM", "MAX", "VK", "WEBHOOK")

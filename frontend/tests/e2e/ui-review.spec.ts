@@ -55,9 +55,9 @@ test('all editors have labelled fields, separated actions and responsive layouts
   await open('simulation'); await page.getByRole('button', { name: 'Добавить заголовок', exact: true }).click(); await review('simulation-SMTP'); await page.getByLabel('Входной адаптер', { exact: true }).selectOption('REST'); await page.getByRole('button', { name: 'Добавить поле', exact: true }).click();
   for (const type of ['TEXT', 'NUMBER', 'BOOLEAN', 'NULL']) { await page.getByLabel('Тип значения', { exact: true }).selectOption(type); await review('simulation-' + type, type === 'TEXT'); }
   await open('channels'); await page.getByRole('button', { name: 'Создать канал', exact: true }).click();
-  for (const kind of ['SMTP', 'WEBHOOK', 'TELEGRAM', 'MAX']) { await page.getByLabel('Тип канала', { exact: true }).selectOption(kind); await review('channel-' + kind, true); }
+  for (const kind of ['SMTP', 'WEBHOOK', 'TELEGRAM', 'MAX', 'VK']) { await page.getByLabel('Тип канала', { exact: true }).selectOption(kind); await review('channel-' + kind, true); }
   await open('templates'); await page.getByRole('button', { name: 'Создать шаблон', exact: true }).click(); await page.getByText('Данные тестового события', { exact: true }).click();
-  for (const kind of ['SMTP', 'WEBHOOK', 'TELEGRAM', 'MAX']) { await page.getByLabel('Тип канала', { exact: true }).selectOption(kind); await review('template-' + kind, kind === 'SMTP'); }
+  for (const kind of ['SMTP', 'WEBHOOK', 'TELEGRAM', 'MAX', 'VK']) { await page.getByLabel('Тип канала', { exact: true }).selectOption(kind); await review('template-' + kind, kind === 'SMTP'); }
   await open('escalations'); await page.getByRole('button', { name: 'Создать политику', exact: true }).click(); await page.getByRole('button', { name: 'Добавить шаг', exact: true }).click(); await review('escalation-editor', true);
   await open('digests'); await page.getByRole('button', { name: 'Создать сводку', exact: true }).click(); await review('digest-editor', true);
   await open('users'); await page.getByRole('button', { name: 'Создать пользователя', exact: true }).click(); await review('user-dialog', true); await page.getByRole('button', { name: 'Отменить', exact: true }).click();

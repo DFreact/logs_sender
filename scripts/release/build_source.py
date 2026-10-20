@@ -73,7 +73,7 @@ def main():
             ],
         ),
     ):
-        tag = "eventhub-" + kind + ":0.12.2-rebuilt"
+        tag = "eventhub-" + kind + ":0.12.3-rebuilt"
         run(
             *common,
             *arguments,

@@ -15,7 +15,7 @@ with engine.connect() as connection:
     assert tuple(role) == ('eventhub_app', False, False, False, False, False)
     assert connection.scalar(text("SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p','S') AND pg_get_userbyid(c.relowner)='eventhub_app'")) == 0
     assert connection.scalar(text("SELECT pg_get_userbyid(relowner) FROM pg_class WHERE oid='public.users'::regclass")) == 'eventhub_migrator'
-    assert connection.scalar(text("SELECT version_num FROM public.alembic_version")) == '0012'
+    assert connection.scalar(text("SELECT version_num FROM public.alembic_version")) == '0013'
     # Even an empty write to Alembic's table must be denied.
     attempts = {
         'create_table': 'CREATE TABLE public.runtime_permission_probe(id integer)',
@@ -42,7 +42,7 @@ with engine.connect() as connection:
     assert not connection.scalar(text("SELECT has_database_privilege(current_user, 'postgres', 'CONNECT')"))
     checks['runtime_role'] = 'eventhub_app'
     checks['schema_owner'] = 'eventhub_migrator'
-    checks['schema_revision'] = '0012'
+    checks['schema_revision'] = '0013'
 engine.dispose()
 print(json.dumps(checks))
 """

@@ -271,9 +271,9 @@ def test_populated_retention_migration_seeds_counters(ingest):
     config = Config("alembic.ini")
     with factory.kw["bind"].begin() as connection:
         config.attributes["connection"] = connection
-        command.stamp(config, "0012")
+        command.stamp(config, "head")
         command.downgrade(config, "0010b")
-        command.upgrade(config, "0012")
+        command.upgrade(config, "head")
         command.check(config)
     with factory() as db:
         assert db.get(Event, event_id) is not None

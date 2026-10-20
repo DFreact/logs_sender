@@ -434,7 +434,7 @@ class OutputAdapter(Base):
     version: Mapped[int] = mapped_column(Integer, default=1)
     __table_args__ = (
         UniqueConstraint("team_id", "kind", name="uq_output_adapter"),
-        CheckConstraint("kind IN ('SMTP','TELEGRAM','MAX','WEBHOOK')", name="ck_output_kind"),
+        CheckConstraint("kind IN ('SMTP','TELEGRAM','MAX','VK','WEBHOOK')", name="ck_output_kind"),
     )
 
 

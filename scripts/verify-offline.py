@@ -27,6 +27,10 @@ factory = build_session_factory(engine)
 """
 
 
+from verification_guard import exclusive
+
+
+@exclusive
 def verify(kit, output):
     if output.exists():
         raise RuntimeError("REPORT_ALREADY_EXISTS")

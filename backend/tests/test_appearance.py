@@ -71,9 +71,9 @@ def test_populated_appearance_migration_preserves_users(setup):
     config = Config("alembic.ini")
     with factory.kw["bind"].begin() as connection:
         config.attributes["connection"] = connection
-        command.stamp(config, "0012")
+        command.stamp(config, "head")
         command.downgrade(config, "0010a")
-        command.upgrade(config, "0012")
+        command.upgrade(config, "head")
         command.check(config)
     with factory() as db:
         team = db.get(Team, DEFAULT_TEAM_ID)

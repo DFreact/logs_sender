@@ -30,8 +30,10 @@ def adapter_state(db, team_id, kind, settings):
     row = db.scalar(
         select(OutputAdapter).where(OutputAdapter.team_id == team_id, OutputAdapter.kind == kind)
     )
-    allowed = (kind != "TELEGRAM" or settings.telegram_allowed) and (
-        kind != "MAX" or settings.max_allowed
+    allowed = (
+        (kind != "TELEGRAM" or settings.telegram_allowed)
+        and (kind != "MAX" or settings.max_allowed)
+        and (kind != "VK" or settings.vk_allowed)
     )
     enabled = (row.enabled if row else kind != "TELEGRAM") and allowed
     visible = (row.visible if row else kind != "TELEGRAM") and allowed
@@ -69,7 +71,7 @@ def channel_view(db, row, settings):
     adapter = adapter_state(db, row.team_id, row.kind, settings)
     configured = bool(row.template_id) and (
         bool(row.secret_ciphertext)
-        if row.kind in ("TELEGRAM", "MAX") or row.configuration.get("username")
+        if row.kind in ("TELEGRAM", "MAX", "VK") or row.configuration.get("username")
         else True
     )
     return {
@@ -125,6 +127,7 @@ def update_adapter(kind: Kind, body: AdapterInput, db: Database, actor: Admin, r
     if (body.enabled or body.visible) and (
         (kind == "TELEGRAM" and not settings.telegram_allowed)
         or (kind == "MAX" and not settings.max_allowed)
+        or (kind == "VK" and not settings.vk_allowed)
     ):
         raise ApiFailure(422, ErrorCode.OUTBOUND_BLOCKED)
     row = db.scalar(

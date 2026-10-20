@@ -17,6 +17,10 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 
 
+from verification_guard import exclusive
+
+
+@exclusive
 def main(kit):
     kit = kit.resolve()
     project = 'eventhub-install-check-' + uuid4().hex[:8]

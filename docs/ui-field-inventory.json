@@ -1,5 +1,5 @@
 {
-  "controls": 125,
+  "controls": 127,
   "files": 19,
   "fields": [
     {
@@ -64,7 +64,27 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 11,
+      "line": 12,
+      "control": "input",
+      "type": "",
+      "id": "\"channel-vk-group\"",
+      "label": "\"channels.vkGroup\"",
+      "hint": "\"channels.vkGroupHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 13,
+      "control": "input",
+      "type": "",
+      "id": "\"channel-vk-peer\"",
+      "label": "\"channels.vkPeer\"",
+      "hint": "\"channels.vkPeerHint\"",
+      "placeholder": ""
+    },
+    {
+      "file": "features/channels/ChannelsPage.tsx",
+      "line": 15,
       "control": "input",
       "type": "",
       "id": "\"channel-chat\"",
@@ -74,7 +94,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 12,
+      "line": 16,
       "control": "input",
       "type": "\"url\"",
       "id": "\"channel-url\"",
@@ -84,7 +104,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 18,
+      "line": 22,
       "control": "input",
       "type": "",
       "id": "\"channel-host\"",
@@ -94,7 +114,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 18,
+      "line": 22,
       "control": "input",
       "type": "\"number\"",
       "id": "\"channel-port\"",
@@ -104,7 +124,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 19,
+      "line": 23,
       "control": "select",
       "type": "",
       "id": "\"channel-tls\"",
@@ -114,7 +134,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 20,
+      "line": 24,
       "control": "input",
       "type": "",
       "id": "\"channel-username\"",
@@ -124,7 +144,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 21,
+      "line": 25,
       "control": "input",
       "type": "\"email\"",
       "id": "\"channel-sender\"",
@@ -134,7 +154,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 22,
+      "line": 26,
       "control": "textarea",
       "type": "",
       "id": "\"channel-recipients\"",
@@ -144,7 +164,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 41,
+      "line": 45,
       "control": "input",
       "type": "",
       "id": "\"channel-name\"",
@@ -154,7 +174,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 42,
+      "line": 46,
       "control": "select",
       "type": "",
       "id": "\"channel-kind\"",
@@ -164,7 +184,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 45,
+      "line": 49,
       "control": "input",
       "type": "\"password\"",
       "id": "\"channel-secret\"",
@@ -174,7 +194,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 46,
+      "line": 50,
       "control": "input",
       "type": "\"checkbox\"",
       "id": "",
@@ -184,7 +204,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 50,
+      "line": 54,
       "control": "select",
       "type": "",
       "id": "\"channel-template\"",
@@ -194,7 +214,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 51,
+      "line": 55,
       "control": "input",
       "type": "\"checkbox\"",
       "id": "",
@@ -204,7 +224,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 56,
+      "line": 60,
       "control": "input",
       "type": "\"checkbox\"",
       "id": "",
@@ -214,7 +234,7 @@
     },
     {
       "file": "features/channels/ChannelsPage.tsx",
-      "line": 56,
+      "line": 60,
       "control": "input",
       "type": "\"checkbox\"",
       "id": "",

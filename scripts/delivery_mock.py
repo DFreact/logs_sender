@@ -7,6 +7,7 @@ from email import policy
 from email.parser import BytesParser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Lock
+from urllib.parse import parse_qs
 
 from aiosmtpd.controller import Controller
 
@@ -26,10 +27,22 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def do_POST(self):
-        data = json.loads(
-            self.rfile.read(min(65536, int(self.headers.get("Content-Length", "0"))))
-        )
-        if self.path.endswith("/getMe"):
+        raw_request = self.rfile.read(min(65536, int(self.headers.get("Content-Length", "0"))))
+        if self.path.startswith("/method/"):
+            data = {k: v[0] for k, v in parse_qs(raw_request.decode()).items()}
+            data.pop("access_token", None)
+        else:
+            data = json.loads(raw_request)
+        if self.path == "/method/groups.getTokenPermissions":
+            status, payload = 200, {"response": {"mask": 4096, "permissions": [
+                {"name": "messages", "setting": 1}
+            ]}}
+        elif self.path == "/method/messages.send":
+            with guard:
+                messages.append({"text": data.get("message"), "vk": True,
+                                 "peer_id": data.get("peer_id"), "key": data.get("random_id")})
+            status, payload = 200, {"response": 123}
+        elif self.path.endswith("/getMe"):
             status, payload = 200, {"ok": True, "result": {"id": 123, "is_bot": True}}
         else:
             text = data.get("text", data.get("message", ""))

@@ -8,7 +8,7 @@ from app.adapters.output.network import endpoint, host_name
 from app.api.config_schemas import RuleInput
 from app.api.schemas import InputModel
 
-Kind = Literal["SMTP", "TELEGRAM", "MAX", "WEBHOOK"]
+Kind = Literal["SMTP", "TELEGRAM", "MAX", "VK", "WEBHOOK"]
 
 
 class SMTPConfiguration(InputModel):
@@ -51,6 +51,19 @@ class MaxConfiguration(InputModel):
         return str(int(value))
 
 
+class VKConfiguration(InputModel):
+    kind: Literal["VK"]
+    group_id: str = Field(pattern=r"^[0-9]{1,19}$")
+    peer_id: str = Field(pattern=r"^-?[0-9]{1,19}$")
+
+    @field_validator("group_id", "peer_id")
+    @classmethod
+    def valid(cls, value):
+        if not -(2**63) <= int(value) < 2**63 or int(value) == 0:
+            raise ValueError("INVALID_IDENTIFIER")
+        return str(int(value))
+
+
 class WebhookConfiguration(InputModel):
     kind: Literal["WEBHOOK"]
     url: str = Field(min_length=8, max_length=2000)
@@ -63,7 +76,11 @@ class WebhookConfiguration(InputModel):
 
 
 Configuration = Annotated[
-    SMTPConfiguration | TelegramConfiguration | MaxConfiguration | WebhookConfiguration,
+    SMTPConfiguration
+    | TelegramConfiguration
+    | MaxConfiguration
+    | VKConfiguration
+    | WebhookConfiguration,
     Field(discriminator="kind"),
 ]
 

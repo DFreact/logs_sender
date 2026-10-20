@@ -26,6 +26,7 @@ def probe(settings, configuration, secret):
                     "outbound_ports",
                     "telegram_allowed",
                     "max_allowed",
+                    "vk_allowed",
                 )
             },
             "configuration": configuration,
@@ -46,6 +47,7 @@ def probe(settings, configuration, secret):
             "CONNECTED",
             "TLS_ONLY",
             "BOT_VERIFIED",
+            "COMMUNITY_VERIFIED",
         ):
             code = output.get("code")
             raise ApiFailure(

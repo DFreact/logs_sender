@@ -8,7 +8,11 @@ import { ChannelHelp } from './ChannelHelp';
 import { TestNotification } from './TestNotification';
 import { useAuth } from '../auth/AuthContext';
 function ConfigurationFields({ value, change }: { value: Configuration; change: (v: Configuration) => void }) {
-  if (value.kind === 'TELEGRAM' || value.kind === 'MAX') return <Field id="channel-chat" labelKey="channels.chat" hint={value.kind === 'MAX' ? 'channels.maxChatHint' : 'channels.chatHint'}><input id="channel-chat" maxLength={21} value={value.chat_id} onChange={(e) => change({ ...value, chat_id: e.target.value })} /></Field>;
+  if (value.kind === 'VK') return <>
+    <Field id="channel-vk-group" labelKey="channels.vkGroup" hint="channels.vkGroupHint"><input id="channel-vk-group" inputMode="numeric" maxLength={19} value={value.group_id} onChange={(e) => change({ ...value, group_id: e.target.value })} /></Field>
+    <Field id="channel-vk-peer" labelKey="channels.vkPeer" hint="channels.vkPeerHint"><input id="channel-vk-peer" maxLength={20} value={value.peer_id} onChange={(e) => change({ ...value, peer_id: e.target.value })} /></Field>
+  </>;
+  if (value.kind === 'TELEGRAM'  || value.kind === 'MAX') return <Field id="channel-chat" labelKey="channels.chat" hint={value.kind === 'MAX' ? 'channels.maxChatHint' : 'channels.chatHint'}><input id="channel-chat" maxLength={21} value={value.chat_id} onChange={(e) => change({ ...value, chat_id: e.target.value })} /></Field>;
   if (value.kind === 'WEBHOOK') return <Field id="channel-url" labelKey="channels.url" hint="channels.urlHint"><input id="channel-url" type="url" maxLength={2000} value={value.url} onChange={(e) => change({ ...value, url: e.target.value })} /></Field>;
   return <MailFields value={value} change={change} />;
 }
@@ -26,7 +30,7 @@ export function ChannelsPage() {
   const { t, formatDate, formatNumber } = useI18n(); const auth = useAuth();
   const [testDraft, setTestDraft] = useState<Channel>();
   const [rows, setRows] = useState<Channel[]>(), [adapters, setAdapters] = useState<Adapter[]>([]), [templates, setTemplates] = useState<Template[]>([]), [draft, setDraft] = useState<Channel>(), [secret, setSecret] = useState(''), [clear, setClear] = useState(false);
-  const [error, setError] = useState<SafeError>(), [busy, setBusy] = useState(false), [notice, setNotice] = useState<'saved' | 'CONNECTED' | 'TLS_ONLY' | 'BOT_VERIFIED'>(), [revision, setRevision] = useState(0);
+  const [error, setError] = useState<SafeError>(), [busy, setBusy] = useState(false), [notice, setNotice] = useState<'saved' | 'CONNECTED' | 'TLS_ONLY' | 'BOT_VERIFIED' | 'COMMUNITY_VERIFIED'>(), [revision, setRevision] = useState(0);
   useEffect(() => { const c = new AbortController(); Promise.all([getChannels(c.signal), getAdapters(c.signal), getTemplates(c.signal)]).then(([r, a, ts]) => { if (!c.signal.aborted) { setRows(r.items); setAdapters(a.items); setTemplates(ts.items); } }).catch((e) => { if (!c.signal.aborted) setError(safeFailure(e)); }); return () => c.abort(); }, [revision]);
   const selectable = adapters.filter((a) => a.installed && a.enabled && a.visible);
   function edit(v: Channel) { setDraft(v); setSecret(''); setClear(false); setError(undefined); setNotice(undefined); }
@@ -35,7 +39,7 @@ export function ChannelsPage() {
   async function probe(v: Channel) { if (!auth.identity || busy) return; setBusy(true); setError(undefined); setNotice(undefined); try { setNotice((await testChannel(v, auth.identity.csrf_token)).result); } catch (e) { setError(safeFailure(e)); } finally { setBusy(false); setRevision((n) => n + 1); } }
   return <>
     <div className="section-heading"><h1>{t('navigation.channels')}</h1><button disabled={busy || !selectable.length} onClick={() => { const kind = selectable[0].kind; edit({ id: '', name: '', kind, enabled: true, configured: false, available: false, version: 1, secret_version: 0, secret_configured: false, configuration: newConfiguration(kind), template_id: null, health_status: 'UNKNOWN', checked_at: null }); }}>{t('channels.create')}</button></div>
-    <p className="muted">{t('channels.hint')}</p>{!draft && <ChannelHelp />}<ErrorNotice error={error} />{notice && <p role="status" className="notice">{t(({ saved: 'channels.saved', CONNECTED: 'channels.connected', TLS_ONLY: 'channels.tlsOnly', BOT_VERIFIED: 'channels.botVerified' } as const)[notice])}</p>}
+    <p className="muted">{t('channels.hint')}</p>{!draft && <ChannelHelp />}<ErrorNotice error={error} />{notice && <p role="status" className="notice">{t(({ saved: 'channels.saved', CONNECTED: 'channels.connected', TLS_ONLY: 'channels.tlsOnly', BOT_VERIFIED: 'channels.botVerified', COMMUNITY_VERIFIED: 'channels.communityVerified' } as const)[notice])}</p>}
     {testDraft && <TestNotification key={testDraft.id} channel={testDraft} close={() => setTestDraft(undefined)} />}
     {draft && <form noValidate className="card" onSubmit={(e) => void submit(e)}><h2>{t(draft.id ? 'channels.edit' : 'channels.create')}</h2><fieldset disabled={busy}>
       <Field id="channel-name" labelKey="config.name"><input id="channel-name" maxLength={120} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></Field>

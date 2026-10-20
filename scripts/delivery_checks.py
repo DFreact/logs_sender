@@ -34,7 +34,7 @@ cert = (
     .not_valid_before(datetime.now(UTC) - timedelta(minutes=1))
     .not_valid_after(datetime.now(UTC) + timedelta(days=1))
     .add_extension(
-        x509.SubjectAlternativeName([x509.DNSName("api.telegram.org"), x509.DNSName("localhost")]),
+        x509.SubjectAlternativeName([x509.DNSName("api.telegram.org"), x509.DNSName("api.vk.com"), x509.DNSName("localhost")]),
         False,
     )
     .add_extension(x509.BasicConstraints(ca=True, path_length=None), True)
@@ -55,15 +55,16 @@ for p in (directory / "cert.pem", directory / "key.pem"):
         text=True,
         check=True,
     )
-    environment = f'''      HUB_OUTBOUND_HOSTS: '["api.telegram.org"]'
+    environment = f'''      HUB_OUTBOUND_HOSTS: '["api.telegram.org","api.vk.com"]'
       HUB_OUTBOUND_NETWORKS: '["{address}/32"]'
       HUB_OUTBOUND_PORTS: '[443,465]'
       HUB_OUTBOUND_CA_FILE: /run/fixtures/cert.pem
       HUB_TELEGRAM_ALLOWED: "true"
+      HUB_VK_ALLOWED: "true"
       HUB_DELIVERY_RETRY_DELAYS: '[1,2]'
       HUB_DELIVERY_JITTER_PERCENT: "0"
 '''
-    mounts = f'''    extra_hosts: ["api.telegram.org:{address}"]
+    mounts = f'''    extra_hosts: ["api.telegram.org:{address}", "api.vk.com:{address}"]
     volumes:
       - "{directory}/cert.pem:/run/fixtures/cert.pem:ro"
 '''
@@ -78,7 +79,7 @@ for p in (directory / "cert.pem", directory / "key.pem"):
       HUB_DELIVERY_RETRY_DELAYS: '[1,2]'
       HUB_DELIVERY_JITTER_PERCENT: "0"
   delivery-mock:
-    image: eventhub-backend:0.12.2
+    image: eventhub-backend:0.12.3
     command: [python, /run/fixtures/mock.py]
     read_only: true
     cap_drop: [ALL]

@@ -100,7 +100,9 @@ def main():
         raise ValueError()
     if t["kind"] == "MAX" and (not body or len(body.encode("utf-16-le")) // 2 > 4000):
         raise ValueError()
-    if t["kind"] not in ("SMTP", "TELEGRAM", "MAX", "WEBHOOK"):
+    if t["kind"] == "VK" and (not body or len(body.encode("utf-16-le")) // 2 > 9000):
+        raise ValueError()
+    if t["kind"] not in ("SMTP", "TELEGRAM", "MAX", "VK", "WEBHOOK"):
         raise ValueError()
     payload = (
         json.dumps({"subject": subject, "message": body}, ensure_ascii=False)

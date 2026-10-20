@@ -21,6 +21,7 @@ def send_isolated(settings, dispatch):
                 "outbound_ports",
                 "telegram_allowed",
                 "max_allowed",
+                "vk_allowed",
             )
         },
         "configuration": dispatch.configuration,

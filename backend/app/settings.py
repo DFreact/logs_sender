@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     outbound_ports: list[int] = [443, 465, 587]
     telegram_allowed: bool = False
     max_allowed: bool = False
+    vk_allowed: bool = False
     delivery_timeout_seconds: int = Field(default=15, ge=5, le=30)
     delivery_lease_seconds: int = Field(default=60, ge=30, le=300)
     delivery_retry_delays: list[int] = [30, 120, 600, 1800]

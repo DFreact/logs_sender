@@ -3,6 +3,7 @@ import { useI18n, type TranslationKey } from '../../i18n';
 
 const helpKeys = {
   SMTP: ['channels.smtpSetup', 'channels.smtpCredentials', 'channels.smtpNetwork'],
+  VK: ['channels.vkSetup', 'channels.vkCredentials', 'channels.vkNetwork'],
   MAX: ['channels.maxSetup', 'channels.maxCredentials', 'channels.maxNetwork'],
   TELEGRAM: ['channels.telegramSetup', 'channels.telegramCredentials', 'channels.telegramNetwork'],
   WEBHOOK: ['channels.webhookSetup', 'channels.webhookCredentials', 'channels.webhookNetwork'],

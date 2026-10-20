@@ -104,7 +104,11 @@ def validate_destination(settings, host, port):
     # Public Internet destinations are restricted even if an operator accidentally
     # configures a broad network allowlist. Private corporate endpoints remain explicit.
     if any(ipaddress.ip_address(address).is_global for address in checked) and (
-        host != "platform-api2.max.ru" or port != 443 or not settings.max_allowed
+        port != 443
+        or not (
+            (host == "platform-api2.max.ru" and settings.max_allowed)
+            or (host == "api.vk.com" and settings.vk_allowed)
+        )
     ):
         blocked()
     return checked

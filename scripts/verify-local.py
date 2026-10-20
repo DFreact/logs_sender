@@ -136,7 +136,7 @@ with engine.connect() as connection:
         config.attributes["connection"] = connection
         command.upgrade(config, "head")
         version = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert version == "0012"
+        assert version == "0013"
         assert set(inspect(connection).get_table_names(schema=schema)) == {
             "alembic_version", "teams", "users", "memberships", "sessions",
             "login_limits", "audit_entries", "work_items", "blobs",

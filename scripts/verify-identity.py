@@ -11,6 +11,10 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 
 
+from verification_guard import exclusive
+
+
+@exclusive
 def main(
     background=False,
     ingestion=False,
@@ -21,8 +25,9 @@ def main(
     escalations=False,
     browser_only=False,
     digests=False,
+    vk_only=False,
 ):
-    notifications = notifications or escalations or digests
+    notifications = notifications or escalations or digests or vk_only
     project = "eventhub-check-" + uuid4().hex[:8]
     port = os.environ.get("HUB_VERIFY_HTTP_PORT", "8081")
     database_port = os.environ.get("HUB_VERIFY_DB_PORT", "55439")
@@ -45,15 +50,41 @@ def main(
       HUB_LOGIN_IP_LIMIT: "5000"
 """)
         if not notifications:
-            override.write_text(override.read_text() + """      HUB_OUTBOUND_HOSTS: '["192.0.2.10"]'
+            override.write_text(
+                override.read_text()
+                + """      HUB_OUTBOUND_HOSTS: '["192.0.2.10"]'
       HUB_OUTBOUND_NETWORKS: '["192.0.2.0/24"]'
-""")
+"""
+            )
         if notifications:
             from delivery_checks import fixtures
 
             override.write_text(
                 override.read_text() + fixtures(directory, env["HUB_DOCKER_SUBNET"])
             )
+        limits = Path(directory) / "limits.json"
+        limits.write_text(
+            json.dumps(
+                {
+                    "services": {
+                        name: {"mem_limit": limit}
+                        for name, limit in {
+                            "postgres": "512m",
+                            "redis": "128m",
+                            "web": "64m",
+                            "api": "512m",
+                            "ingestion": "384m",
+                            "smtp": "256m",
+                            "worker": "384m",
+                            "scheduler": "256m",
+                            "dispatcher": "256m",
+                            "delivery": "512m",
+                            **({"delivery-mock": "128m"} if notifications else {}),
+                        }.items()
+                    }
+                }
+            )
+        )
         compose = [
             "docker",
             "compose",
@@ -63,6 +94,8 @@ def main(
             "infra/compose/compose.yaml",
             "-f",
             str(override),
+            "-f",
+            str(limits),
         ]
 
         def run(*args, input_text=None):
@@ -77,7 +110,9 @@ def main(
             )
             if result.returncode:
                 diagnostic = ROOT / ".local" / (project + "-command-error.log")
-                descriptor = os.open(diagnostic, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+                descriptor = os.open(
+                    diagnostic, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600
+                )
                 with os.fdopen(descriptor, "w") as output:
                     output.write(result.stderr)
                 raise RuntimeError(f"COMPOSE_CHECK_FAILED:{args[0]}")
@@ -147,7 +182,7 @@ engine.dispose()
                 from routing_checks import verify as verify_routing
 
                 verify_routing(run, int(env["HUB_SMTP_PORT"]))
-            if notifications:
+            if notifications and not vk_only:
                 from delivery_checks import verify as verify_delivery
 
                 verify_delivery(run, int(env["HUB_SMTP_PORT"]))
@@ -173,37 +208,56 @@ engine.dispose()
                     [
                         str(ROOT / ".venv/bin/pytest"),
                         "-q",
-                        "tests/test_identity.py",
-                        "tests/test_connections.py",
-                        "tests/test_event_feed.py",
-                        "tests/test_appearance.py",
-                        "tests/test_retention.py",
-                        *(["tests/test_digests.py"] if digests else []),
-                        *(["tests/test_escalations.py"] if escalations else []),
                         *(
                             [
-                                "tests/test_notifications.py",
-                                "tests/test_delivery_transport.py",
+                                "tests/test_vk.py",
+                                "tests/test_appearance.py::test_populated_appearance_migration_preserves_users",
+                                "tests/test_retention.py::test_populated_retention_migration_seeds_counters",
                             ]
-                            if notifications
-                            else []
-                        ),
-                        *(["tests/test_sources.py"] if sources or routing else []),
-                        *(["tests/test_routing.py"] if routing else []),
-                        *(
-                            ["tests/test_channels.py", "tests/test_output_transport.py", "tests/test_max.py"]
-                            if channels
-                            else []
-                        ),
-                        *(["tests/test_ingestion.py"] if ingestion else []),
-                        *(
-                            [
-                                "tests/test_background.py",
-                                "tests/test_storage.py",
-                                "tests/test_health.py",
+                            if vk_only
+                            else [
+                                "tests/test_identity.py",
+                                "tests/test_connections.py",
+                                "tests/test_event_feed.py",
+                                "tests/test_appearance.py",
+                                "tests/test_retention.py",
+                                *(["tests/test_digests.py"] if digests else []),
+                                *(["tests/test_escalations.py"] if escalations else []),
+                                *(
+                                    [
+                                        "tests/test_notifications.py",
+                                        "tests/test_delivery_transport.py",
+                                    ]
+                                    if notifications
+                                    else []
+                                ),
+                                *(
+                                    ["tests/test_sources.py"]
+                                    if sources or routing
+                                    else []
+                                ),
+                                *(["tests/test_routing.py"] if routing else []),
+                                *(
+                                    [
+                                        "tests/test_channels.py",
+                                        "tests/test_output_transport.py",
+                                        "tests/test_max.py",
+                                        "tests/test_vk.py",
+                                    ]
+                                    if channels
+                                    else []
+                                ),
+                                *(["tests/test_ingestion.py"] if ingestion else []),
+                                *(
+                                    [
+                                        "tests/test_background.py",
+                                        "tests/test_storage.py",
+                                        "tests/test_health.py",
+                                    ]
+                                    if background
+                                    else []
+                                ),
                             ]
-                            if background
-                            else []
                         ),
                     ],
                     cwd=ROOT / "backend",
@@ -223,7 +277,14 @@ engine.dispose()
                 **({"E2E_DIGEST_FIXTURE": "1"} if digests else {}),
             }
             subprocess.run(
-                ["npm", "run", "test:e2e", "--", "--workers=2"],
+                [
+                    "npm",
+                    "run",
+                    "test:e2e",
+                    "--",
+                    "--workers=1",
+                    *(["vk.spec.ts", "ui-review.spec.ts"] if vk_only else []),
+                ],
                 cwd=ROOT / "frontend",
                 env=test_env,
                 check=True,
@@ -236,7 +297,9 @@ engine.dispose()
             # Keep private diagnostics before the disposable database is removed.
             diagnostic = ROOT / ".local" / (project + "-postgres.log")
             try:
-                descriptor = os.open(diagnostic, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                descriptor = os.open(
+                    diagnostic, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600
+                )
                 with os.fdopen(descriptor, "w") as target:
                     target.write(run("logs", "--no-color", "postgres"))
             except (OSError, RuntimeError):
@@ -265,6 +328,7 @@ if __name__ == "__main__":
     parser.add_argument("--escalations", action="store_true")
     parser.add_argument("--digests", action="store_true")
     parser.add_argument("--notifications", action="store_true")
+    parser.add_argument("--vk-only", action="store_true")
     args = parser.parse_args()
     main(
         background=args.background,
@@ -276,4 +340,5 @@ if __name__ == "__main__":
         escalations=args.escalations,
         browser_only=args.browser_only,
         digests=args.digests,
+        vk_only=args.vk_only,
     )

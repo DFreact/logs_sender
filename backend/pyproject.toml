@@ -1,6 +1,6 @@
 [project]
 name = "eventhub-backend"
-version = "0.12.2"
+version = "0.12.3"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
